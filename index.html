@@ -63,11 +63,11 @@
             text-transform: uppercase;
         }
 
-        /* ТО САМОЕ ОКНО, ГДЕ ТЕПЕРЬ БУДУТ СООБЩЕНИЯ */
+        /* ОКНО СООБЩЕНИЙ */
         .display-window {
             width: 90%;
             max-width: 600px;
-            height: 400px;
+            height: 450px;
             background: #fff;
             margin-top: 20px;
             border-radius: 12px 12px 0 0;
@@ -87,12 +87,32 @@
             border-radius: 8px;
             border: 1px solid #eee;
             font-size: 14px;
+            position: relative;
+        }
+
+        /* Сдвиг для ответов */
+        .is-reply {
+            margin-left: 30px;
+            border-left: 3px solid #000;
+            background: #f1f1f1;
         }
 
         .log-user { font-weight: bold; color: #333; }
         .log-time { font-size: 10px; color: #aaa; float: right; }
+        
+        .reply-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 0;
+            margin-top: 5px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
 
-        /* ПАНЕЛЬ ВВОДА СНИЗУ */
+        /* ПАНЕЛЬ ВВОДА */
         .input-box {
             width: 90%;
             max-width: 600px;
@@ -110,6 +130,17 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
+        }
+
+        /* Индикатор того, кому отвечаем */
+        #reply-info {
+            display: none;
+            background: #eee;
+            padding: 5px 10px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #000;
         }
 
         .send-btn {
@@ -142,10 +173,14 @@
     </nav>
 
     <div class="display-window" id="screen">
-        <div style="color: #ccc; text-align: center; margin-top: 150px;">Ожидание данных из базы...</div>
+        <div style="color: #ccc; text-align: center; margin-top: 150px;">Ожидание данных...</div>
     </div>
 
     <div class="input-box">
+        <div id="reply-info">
+            Ответ для: <b id="reply-to-user"></b> 
+            <span onclick="cancelReply()" style="color:red; cursor:pointer; float:right;">[ОТМЕНА]</span>
+        </div>
         <input type="text" id="nick" class="input-field" placeholder="Твой ник...">
         <input type="text" id="message" class="input-field" placeholder="Сообщение...">
         <button onclick="push()" class="send-btn">ОТПРАВИТЬ В БАЗУ</button>
@@ -168,6 +203,20 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
+        let currentReplyId = null; // ID родительского сообщения
+
+        function setReply(id, user) {
+            currentReplyId = id;
+            document.getElementById('reply-info').style.display = 'block';
+            document.getElementById('reply-to-user').innerText = user;
+            document.getElementById('message').focus();
+        }
+
+        function cancelReply() {
+            currentReplyId = null;
+            document.getElementById('reply-info').style.display = 'none';
+        }
+
         function push() {
             const u = document.getElementById('nick').value || 'User';
             const m = document.getElementById('message').value;
@@ -175,28 +224,46 @@
                 db.ref('chat_logs').push().set({
                     user: u,
                     text: m,
-                    time: new Date().toLocaleTimeString()
+                    time: new Date().toLocaleTimeString(),
+                    parentId: currentReplyId // Сохраняем связь
                 });
                 document.getElementById('message').value = '';
+                cancelReply();
             }
         }
 
-        // ВОТ ЭТА ЧАСТЬ ОЖИВЛЯЕТ ТВОЙ КВАДРАТ
-        db.ref('chat_logs').limitToLast(50).on('value', (snapshot) => {
+        db.ref('chat_logs').on('value', (snapshot) => {
             const screen = document.getElementById('screen');
-            screen.innerHTML = ''; // Очищаем заглушку
-            snapshot.forEach((child) => {
-                const data = child.val();
-                screen.innerHTML += `
-                    <div class="log-item">
-                        <span class="log-user">${data.user}</span>
-                        <span class="log-time">${data.time}</span>
-                        <div style="margin-top:5px;">${data.text}</div>
-                    </div>
-                `;
+            screen.innerHTML = '';
+            
+            const allMsgs = [];
+            snapshot.forEach(child => {
+                allMsgs.push({ id: child.key, ...child.val() });
             });
-            screen.scrollTop = screen.scrollHeight; // Всегда внизу
+
+            // Сначала выводим основные сообщения, потом ответы под ними
+            allMsgs.filter(m => !m.parentId).forEach(parent => {
+                renderMsg(parent, false);
+                allMsgs.filter(m => m.parentId === parent.id).forEach(reply => {
+                    renderMsg(reply, true);
+                });
+            });
+
+            screen.scrollTop = screen.scrollHeight;
         });
+
+        function renderMsg(data, isReply) {
+            const screen = document.getElementById('screen');
+            const replyClass = isReply ? 'is-reply' : '';
+            screen.innerHTML += `
+                <div class="log-item ${replyClass}">
+                    <span class="log-user">${data.user}</span>
+                    <span class="log-time">${data.time}</span>
+                    <div style="margin-top:5px;">${data.text}</div>
+                    ${!isReply ? `<button class="reply-btn" onclick="setReply('${data.id}', '${data.user}')">Ответить</button>` : ''}
+                </div>
+            `;
+        }
     </script>
 
 </body>

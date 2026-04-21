@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SITE: FIREBASE ENGINE + MENU</title>
+    <style>
+        /* Базовые настройки */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ШАПКА САЙТА */
+        header {
+            width: 100%;
+            background-color: #ffffff;
+            border-bottom: 1px solid #ddd;
+            padding: 20px 0 10px 0;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: monospace;
+            color: #000;
+        }
+
+        .engine-sub {
+            margin: 5px 0 15px 0;
+            font-size: 11px;
+            color: #888;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* НАВИГАЦИОННОЕ МЕНЮ */
+        nav {
+            background-color: #fff;
+            padding: 10px 0;
+            border-bottom: 2px solid #000;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #000;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            transition: color 0.2s;
+        }
+
+        nav ul li a:hover {
+            color: #666;
+        }
+
+        /* ОСНОВНОЙ КОНТЕНТ */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .chat-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        #messages {
+            height: 350px;
+            overflow-y: auto;
+            background-color: #fff;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .message-block {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 10px 12px;
+            border-radius: 8px;
+        }
+
+        .message-user { font-weight: bold; color: #333; font-size: 13px; }
+        .message-time { color: #999; font-size: 11px; float: right; }
+        .message-text { margin-top: 4px; font-size: 14px; color: #000; }
+
+        .input-panel {
+            padding: 15px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .send-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* ПОДВАЛ */
+        footer {
+            width: 100%;
+            background-color: #ffffff;
+            border-top: 1px solid #ddd;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 11px;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ENGINE: FIREBASE CONSOLE</h1>
+        <div class="engine-sub">Project: metaimperiya-14d1b | Cloud Realtime DB</div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#">Главная</a></li>
+            <li><a href="#">Студия</a></li>
+            <li><a href="#">3D Модели</a></li>
+            <li><a href="#">Коннект</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="chat-container">
+            <div id="messages"></div>
+            <div class="input-panel">
+                <input type="text" id="user" class="input-field" placeholder="Никнейм...">
+                <input type="text" id="msg" class="input-field" placeholder="Сообщение...">
+                <button onclick="send()" class="send-button">Отправить в базу</button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        &copy; 2026 METAIMPERIYA STUDIO | DATABASE LOGS SYSTEM
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyC5L2GQ-2CYj-GNYsHENASdvKVF68rsEb0",
+        authDomain: "metaimperiya-14d1b.firebaseapp.com",
+        databaseURL: "https://metaimperiya-14d1b-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "metaimperiya-14d1b",
+        storageBucket: "metaimperiya-14d1b.firebasestorage.app",
+        messagingSenderId: "415206276902",
+        appId: "1:415206276902:web:1e38287b922191eac00be7"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      function send() {
+        const u = document.getElementById('user').value || 'User';
+        const m = document.getElementById('msg').value;
+        if(m.trim() !== "") {
+          db.ref('chat_logs').push().set({
+            user: u,
+            text: m,
+            time: new Date().toLocaleTimeString()
+          });
+          document.getElementById('msg').value = '';
+        }
+      }
+
+      db.ref('chat_logs').limitToLast(50).on('child_added', (snap) => {
+        const d = snap.val();
+        const msgDiv = document.getElementById('messages');
+        msgDiv.innerHTML += `
+          <div class="message-block">
+            <span class="message-user">${d.user}</span> 
+            <span class="message-time">${d.time}</span>
+            <div class="message-text">${d.text}</div>
+          </div>
+        `;
+        msgDiv.scrollTop = msgDiv.scrollHeight;
+      });
+
+      document.getElementById('msg').addEventListener("keyup", (e) => { if (e.key === "Enter") send(); });
+    </script>
+
+</body>
+</html>

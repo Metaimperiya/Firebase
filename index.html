@@ -65,8 +65,8 @@
 
         /* ОКНО СООБЩЕНИЙ */
         .display-window {
-            width: 90%;
-            max-width: 600px;
+            width: 95%;
+            max-width: 650px;
             height: 450px;
             background: #fff;
             margin-top: 20px;
@@ -74,7 +74,7 @@
             border: 1px solid #ddd;
             border-bottom: none;
             overflow-y: auto;
-            padding: 20px;
+            padding: 15px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -83,18 +83,19 @@
 
         .log-item {
             background: #f9f9f9;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid #eee;
             font-size: 14px;
             position: relative;
+            transition: 0.2s;
         }
 
-        /* Сдвиг для ответов */
+        /* Стиль для ответов (сдвиг вправо) */
         .is-reply {
-            margin-left: 30px;
-            border-left: 3px solid #000;
+            margin-left: 35px;
             background: #f1f1f1;
+            border-left: 4px solid #000;
         }
 
         .log-user { font-weight: bold; color: #333; }
@@ -107,20 +108,30 @@
             font-size: 11px;
             cursor: pointer;
             padding: 0;
-            margin-top: 5px;
+            margin-top: 8px;
             text-transform: uppercase;
             font-weight: bold;
         }
 
         /* ПАНЕЛЬ ВВОДА */
         .input-box {
-            width: 90%;
-            max-width: 600px;
+            width: 95%;
+            max-width: 650px;
             background: #fff;
             padding: 20px;
             border-radius: 0 0 12px 12px;
             border: 1px solid #ddd;
             box-sizing: border-box;
+        }
+
+        #reply-info {
+            display: none;
+            background: #ffeb3b;
+            padding: 8px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-weight: bold;
         }
 
         .input-field {
@@ -130,17 +141,6 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
-        }
-
-        /* Индикатор того, кому отвечаем */
-        #reply-info {
-            display: none;
-            background: #eee;
-            padding: 5px 10px;
-            font-size: 12px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            border-left: 4px solid #000;
         }
 
         .send-btn {
@@ -154,13 +154,15 @@
             cursor: pointer;
             text-transform: uppercase;
         }
+
+        .send-btn:hover { background: #333; }
     </style>
 </head>
 <body>
 
     <header>
         <h1>ENGINE: FIREBASE CONSOLE</h1>
-        <div class="sub">Project: metaimperiya-14d1b | Live Connection</div>
+        <div class="sub">Project: metaimperiya-14d1b | Admin Protected</div>
     </header>
 
     <nav>
@@ -173,23 +175,25 @@
     </nav>
 
     <div class="display-window" id="screen">
-        <div style="color: #ccc; text-align: center; margin-top: 150px;">Ожидание данных...</div>
+        <div style="color: #ccc; text-align: center; margin-top: 150px;">Подключение к базе данных...</div>
     </div>
 
     <div class="input-box">
         <div id="reply-info">
-            Ответ для: <b id="reply-to-user"></b> 
-            <span onclick="cancelReply()" style="color:red; cursor:pointer; float:right;">[ОТМЕНА]</span>
+            ОТВЕТ ДЛЯ: <span id="reply-to-user"></span> 
+            <span onclick="cancelReply()" style="color:red; cursor:pointer; float:right;">[ОТМЕНИТЬ]</span>
         </div>
+
         <input type="text" id="nick" class="input-field" placeholder="Твой ник...">
-        <input type="text" id="message" class="input-field" placeholder="Сообщение...">
-        <button onclick="push()" class="send-btn">ОТПРАВИТЬ В БАЗУ</button>
+        <input type="text" id="message" class="input-field" placeholder="Введите сообщение...">
+        <button onclick="push()" class="send-btn">ОТПРАВИТЬ ДАННЫЕ</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
+        // Твой конфиг
         const firebaseConfig = {
             apiKey: "AIzaSyC5L2GQ-2CYj-GNYsHENASdvKVF68rsEb0",
             authDomain: "metaimperiya-14d1b.firebaseapp.com",
@@ -203,8 +207,13 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        let currentReplyId = null; // ID родительского сообщения
+        // Настройка админки (Пароль в URL: ?admin=1234)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAdmin = urlParams.get('admin') === '1234'; 
 
+        let currentReplyId = null;
+
+        // Функция подготовки ответа
         function setReply(id, user) {
             currentReplyId = id;
             document.getElementById('reply-info').style.display = 'block';
@@ -212,26 +221,36 @@
             document.getElementById('message').focus();
         }
 
+        // Отмена ответа
         function cancelReply() {
             currentReplyId = null;
             document.getElementById('reply-info').style.display = 'none';
         }
 
+        // Отправка в базу
         function push() {
-            const u = document.getElementById('nick').value || 'User';
+            const u = document.getElementById('nick').value || 'Аноним';
             const m = document.getElementById('message').value;
             if(m.trim() !== "") {
                 db.ref('chat_logs').push().set({
                     user: u,
                     text: m,
                     time: new Date().toLocaleTimeString(),
-                    parentId: currentReplyId // Сохраняем связь
+                    parentId: currentReplyId // Связь с родителем
                 });
                 document.getElementById('message').value = '';
                 cancelReply();
             }
         }
 
+        // Удаление (только для админа)
+        function removeMsg(id) {
+            if (isAdmin && confirm("Удалить это сообщение безвозвратно?")) {
+                db.ref('chat_logs').child(id).remove();
+            }
+        }
+
+        // Главный слушатель базы
         db.ref('chat_logs').on('value', (snapshot) => {
             const screen = document.getElementById('screen');
             screen.innerHTML = '';
@@ -241,26 +260,39 @@
                 allMsgs.push({ id: child.key, ...child.val() });
             });
 
-            // Сначала выводим основные сообщения, потом ответы под ними
-            allMsgs.filter(m => !m.parentId).forEach(parent => {
+            // Сортировка: Родителю - его дети
+            const parents = allMsgs.filter(m => !m.parentId);
+            
+            parents.forEach(parent => {
                 renderMsg(parent, false);
-                allMsgs.filter(m => m.parentId === parent.id).forEach(reply => {
+                const replies = allMsgs.filter(m => m.parentId === parent.id);
+                replies.forEach(reply => {
                     renderMsg(reply, true);
                 });
             });
 
+            // Автоскролл вниз
             screen.scrollTop = screen.scrollHeight;
         });
 
+        // Функция отрисовки блока сообщения
         function renderMsg(data, isReply) {
             const screen = document.getElementById('screen');
             const replyClass = isReply ? 'is-reply' : '';
+            
+            // Кнопка удаления (видна только админу)
+            const deleteBtn = isAdmin ? `<span onclick="removeMsg('${data.id}')" style="color:red; cursor:pointer; float:right; font-weight:bold; margin-left:15px; font-size:18px;">&times;</span>` : '';
+
+            // Кнопка ответа (не показываем для самих ответов, чтобы не плодить бесконечную вложенность)
+            const replyBtn = !isReply ? `<button class="reply-btn" onclick="setReply('${data.id}', '${data.user}')">Ответить</button>` : '';
+
             screen.innerHTML += `
                 <div class="log-item ${replyClass}">
                     <span class="log-user">${data.user}</span>
                     <span class="log-time">${data.time}</span>
-                    <div style="margin-top:5px;">${data.text}</div>
-                    ${!isReply ? `<button class="reply-btn" onclick="setReply('${data.id}', '${data.user}')">Ответить</button>` : ''}
+                    ${deleteBtn}
+                    <div style="margin-top:5px; line-height:1.4;">${data.text}</div>
+                    ${replyBtn}
                 </div>
             `;
         }

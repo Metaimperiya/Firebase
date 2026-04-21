@@ -3,51 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SITE: FIREBASE ENGINE + MENU</title>
+    <title>ENGINE: FIREBASE LIVE LOGS</title>
     <style>
-        /* Базовые настройки */
-        html, body {
-            height: 100%;
+        body {
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
-        /* ШАПКА САЙТА */
+        /* ШАПКА */
         header {
             width: 100%;
-            background-color: #ffffff;
-            border-bottom: 1px solid #ddd;
-            padding: 20px 0 10px 0;
+            background: #fff;
+            padding: 20px 0;
             text-align: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #ddd;
         }
 
         header h1 {
             margin: 0;
-            font-size: 22px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
             font-family: monospace;
-            color: #000;
+            font-size: 22px;
+            letter-spacing: 2px;
         }
 
-        .engine-sub {
-            margin: 5px 0 15px 0;
+        .sub {
             font-size: 11px;
             color: #888;
-            font-weight: bold;
             text-transform: uppercase;
+            margin-top: 5px;
         }
 
-        /* НАВИГАЦИОННОЕ МЕНЮ */
+        /* МЕНЮ */
         nav {
-            background-color: #fff;
-            padding: 10px 0;
+            width: 100%;
+            background: #fff;
             border-bottom: 2px solid #000;
+            padding: 10px 0;
         }
 
         nav ul {
@@ -56,101 +52,75 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            gap: 25px;
+            gap: 20px;
         }
 
         nav ul li a {
             text-decoration: none;
             color: #000;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 13px;
             text-transform: uppercase;
-            transition: color 0.2s;
         }
 
-        nav ul li a:hover {
-            color: #666;
-        }
-
-        /* ОСНОВНОЙ КОНТЕНТ */
-        main {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 40px 20px;
-        }
-
-        .chat-container {
-            background-color: #fff;
-            width: 100%;
-            max-width: 500px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
+        /* ТО САМОЕ ОКНО, ГДЕ ТЕПЕРЬ БУДУТ СООБЩЕНИЯ */
+        .display-window {
+            width: 90%;
+            max-width: 600px;
+            height: 400px;
+            background: #fff;
+            margin-top: 20px;
+            border-radius: 12px 12px 0 0;
             border: 1px solid #ddd;
-        }
-
-        #messages {
-            height: 350px;
+            border-bottom: none;
             overflow-y: auto;
-            background-color: #fff;
-            padding: 15px;
+            padding: 20px;
+            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             gap: 10px;
-            border-bottom: 1px solid #eee;
         }
 
-        .message-block {
-            background-color: #f9f9f9;
-            border: 1px solid #eee;
-            padding: 10px 12px;
+        .log-item {
+            background: #f9f9f9;
+            padding: 10px;
             border-radius: 8px;
+            border: 1px solid #eee;
+            font-size: 14px;
         }
 
-        .message-user { font-weight: bold; color: #333; font-size: 13px; }
-        .message-time { color: #999; font-size: 11px; float: right; }
-        .message-text { margin-top: 4px; font-size: 14px; color: #000; }
+        .log-user { font-weight: bold; color: #333; }
+        .log-time { font-size: 10px; color: #aaa; float: right; }
 
-        .input-panel {
-            padding: 15px;
-            background-color: #f9f9f9;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        /* ПАНЕЛЬ ВВОДА СНИЗУ */
+        .input-box {
+            width: 90%;
+            max-width: 600px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 0 0 12px 12px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
         }
 
         .input-field {
             width: 100%;
             padding: 12px;
+            margin-bottom: 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
             box-sizing: border-box;
-            outline: none;
         }
 
-        .send-button {
+        .send-btn {
             width: 100%;
-            padding: 12px;
-            background-color: #000;
+            padding: 15px;
+            background: #000;
             color: #fff;
             border: none;
             border-radius: 6px;
             font-weight: bold;
             cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        /* ПОДВАЛ */
-        footer {
-            width: 100%;
-            background-color: #ffffff;
-            border-top: 1px solid #ddd;
-            padding: 15px 0;
-            text-align: center;
-            font-size: 11px;
-            color: #aaa;
             text-transform: uppercase;
         }
     </style>
@@ -159,7 +129,7 @@
 
     <header>
         <h1>ENGINE: FIREBASE CONSOLE</h1>
-        <div class="engine-sub">Project: metaimperiya-14d1b | Cloud Realtime DB</div>
+        <div class="sub">Project: metaimperiya-14d1b | Live Connection</div>
     </header>
 
     <nav>
@@ -171,65 +141,62 @@
         </ul>
     </nav>
 
-    <main>
-        <div class="chat-container">
-            <div id="messages"></div>
-            <div class="input-panel">
-                <input type="text" id="user" class="input-field" placeholder="Никнейм...">
-                <input type="text" id="msg" class="input-field" placeholder="Сообщение...">
-                <button onclick="send()" class="send-button">Отправить в базу</button>
-            </div>
-        </div>
-    </main>
+    <div class="display-window" id="screen">
+        <div style="color: #ccc; text-align: center; margin-top: 150px;">Ожидание данных из базы...</div>
+    </div>
 
-    <footer>
-        &copy; 2026 METAIMPERIYA STUDIO | DATABASE LOGS SYSTEM
-    </footer>
+    <div class="input-box">
+        <input type="text" id="nick" class="input-field" placeholder="Твой ник...">
+        <input type="text" id="message" class="input-field" placeholder="Сообщение...">
+        <button onclick="push()" class="send-btn">ОТПРАВИТЬ В БАЗУ</button>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
 
     <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyC5L2GQ-2CYj-GNYsHENASdvKVF68rsEb0",
-        authDomain: "metaimperiya-14d1b.firebaseapp.com",
-        databaseURL: "https://metaimperiya-14d1b-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "metaimperiya-14d1b",
-        storageBucket: "metaimperiya-14d1b.firebasestorage.app",
-        messagingSenderId: "415206276902",
-        appId: "1:415206276902:web:1e38287b922191eac00be7"
-      };
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5L2GQ-2CYj-GNYsHENASdvKVF68rsEb0",
+            authDomain: "metaimperiya-14d1b.firebaseapp.com",
+            databaseURL: "https://metaimperiya-14d1b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "metaimperiya-14d1b",
+            storageBucket: "metaimperiya-14d1b.firebasestorage.app",
+            messagingSenderId: "415206276902",
+            appId: "1:415206276902:web:1e38287b922191eac00be7"
+        };
 
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
 
-      function send() {
-        const u = document.getElementById('user').value || 'User';
-        const m = document.getElementById('msg').value;
-        if(m.trim() !== "") {
-          db.ref('chat_logs').push().set({
-            user: u,
-            text: m,
-            time: new Date().toLocaleTimeString()
-          });
-          document.getElementById('msg').value = '';
+        function push() {
+            const u = document.getElementById('nick').value || 'User';
+            const m = document.getElementById('message').value;
+            if(m.trim() !== "") {
+                db.ref('chat_logs').push().set({
+                    user: u,
+                    text: m,
+                    time: new Date().toLocaleTimeString()
+                });
+                document.getElementById('message').value = '';
+            }
         }
-      }
 
-      db.ref('chat_logs').limitToLast(50).on('child_added', (snap) => {
-        const d = snap.val();
-        const msgDiv = document.getElementById('messages');
-        msgDiv.innerHTML += `
-          <div class="message-block">
-            <span class="message-user">${d.user}</span> 
-            <span class="message-time">${d.time}</span>
-            <div class="message-text">${d.text}</div>
-          </div>
-        `;
-        msgDiv.scrollTop = msgDiv.scrollHeight;
-      });
-
-      document.getElementById('msg').addEventListener("keyup", (e) => { if (e.key === "Enter") send(); });
+        // ВОТ ЭТА ЧАСТЬ ОЖИВЛЯЕТ ТВОЙ КВАДРАТ
+        db.ref('chat_logs').limitToLast(50).on('value', (snapshot) => {
+            const screen = document.getElementById('screen');
+            screen.innerHTML = ''; // Очищаем заглушку
+            snapshot.forEach((child) => {
+                const data = child.val();
+                screen.innerHTML += `
+                    <div class="log-item">
+                        <span class="log-user">${data.user}</span>
+                        <span class="log-time">${data.time}</span>
+                        <div style="margin-top:5px;">${data.text}</div>
+                    </div>
+                `;
+            });
+            screen.scrollTop = screen.scrollHeight; // Всегда внизу
+        });
     </script>
 
 </body>
